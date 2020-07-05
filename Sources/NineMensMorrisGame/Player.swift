@@ -57,6 +57,7 @@ class Player: Input {
           self.colorOfPools = Player.pickPools()
         }
         else {
+            //
             self.colorOfPools = colorForSecondPerson
         }
         self.poolsOnBoard = 0

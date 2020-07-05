@@ -42,36 +42,41 @@ class Board: Rules {
     }
 
     func checkAvailableNeighbours(currentPosition: Position) -> Bool {
-        if currentPosition.positionNumber % 2 == 0 {
-            switch currentPosition.ringNumber {
+        let curPosLeft = currentPosition.ringNumber
+        let curPosRight = currentPosition.positionNumber
+
+        if curPosRight % 2 == 0 {
+            switch curPosLeft {
                 case 0: 
-                    return checkIfGivenPositionIsAvailable(givenPosition: Position(ringNumber: currentPosition.ringNumber, positionNumber: (currentPosition.positionNumber + 1) % 8)) ||
-                        checkIfGivenPositionIsAvailable(givenPosition: Position(ringNumber: currentPosition.ringNumber, positionNumber: (8+currentPosition.positionNumber -1) % 8)) ||
-                        checkIfGivenPositionIsAvailable(givenPosition: Position(ringNumber: currentPosition.ringNumber + 1, positionNumber: currentPosition.positionNumber))
+                    return checkIfGivenPositionIsAvailable(givenPosition: Position(ringNumber: curPosLeft, positionNumber: (curPosRight + 1) % 8)) ||
+                        checkIfGivenPositionIsAvailable(givenPosition: Position(ringNumber: curPosLeft, positionNumber: (8+curPosRight - 1) % 8)) ||
+                        checkIfGivenPositionIsAvailable(givenPosition: Position(ringNumber: curPosLeft + 1, positionNumber: curPosRight))
                 case 1:
-                    return checkIfGivenPositionIsAvailable(givenPosition: Position(ringNumber: currentPosition.ringNumber, positionNumber: (currentPosition.positionNumber + 1) % 8)) ||
-                        checkIfGivenPositionIsAvailable(givenPosition: Position(ringNumber: currentPosition.ringNumber, positionNumber: (8+currentPosition.positionNumber - 1) % 8)) ||
-                        checkIfGivenPositionIsAvailable(givenPosition: Position(ringNumber: currentPosition.ringNumber + 1, positionNumber: currentPosition.positionNumber)) ||
-                        checkIfGivenPositionIsAvailable(givenPosition: Position(ringNumber: currentPosition.ringNumber - 1, positionNumber: currentPosition.positionNumber))
+                    return checkIfGivenPositionIsAvailable(givenPosition: Position(ringNumber: curPosLeft, positionNumber: (curPosRight + 1) % 8)) ||
+                        checkIfGivenPositionIsAvailable(givenPosition: Position(ringNumber: curPosLeft, positionNumber: (8+curPosRight - 1) % 8)) ||
+                        checkIfGivenPositionIsAvailable(givenPosition: Position(ringNumber: curPosLeft + 1, positionNumber: curPosRight)) ||
+                        checkIfGivenPositionIsAvailable(givenPosition: Position(ringNumber: curPosLeft - 1, positionNumber: curPosRight))
                 case 2: 
-                    return checkIfGivenPositionIsAvailable(givenPosition: Position(ringNumber: currentPosition.ringNumber, positionNumber: (8+currentPosition.positionNumber -1)%8)) ||
-                        checkIfGivenPositionIsAvailable(givenPosition: Position(ringNumber: currentPosition.ringNumber, positionNumber: (currentPosition.positionNumber + 1)%8)) ||
-                        checkIfGivenPositionIsAvailable(givenPosition: Position(ringNumber: currentPosition.ringNumber - 1, positionNumber: currentPosition.positionNumber))
+                    return checkIfGivenPositionIsAvailable(givenPosition: Position(ringNumber: curPosLeft, positionNumber: (8+curPosRight - 1)%8)) ||
+                        checkIfGivenPositionIsAvailable(givenPosition: Position(ringNumber: curPosLeft, positionNumber: (curPosRight + 1)%8)) ||
+                        checkIfGivenPositionIsAvailable(givenPosition: Position(ringNumber: curPosLeft - 1, positionNumber: curPosRight))
+                default:
+                    return false
             }
         }
         else {
-            return checkIfGivenPositionIsAvailable(givenPosition: Position(ringNumber: currentPosition.ringNumber, positionNumber: (8+currentPosition.positionNumber -1)% 8)) ||
-                checkIfGivenPositionIsAvailable(givenPosition: Position(ringNumber: currentPosition.ringNumber, positionNumber: (8+currentPosition.positionNumber + 1)%8))
+            return checkIfGivenPositionIsAvailable(givenPosition: Position(ringNumber: curPosLeft, positionNumber: (8+curPosRight - 1) % 8)) ||
+                checkIfGivenPositionIsAvailable(givenPosition: Position(ringNumber: curPosLeft, positionNumber: (8+curPosRight + 1) % 8))
         }
     }
 
     func checkIfPlayerCanMovePool(player: Player) -> Bool {
         let colorOfPool = player.colorOfPools
 
-        for element in coordinates {
-            for value in element {
+        for (index1, element) in board.enumerated() {
+            for (index2, value) in element.enumerated() {
                 if value == colorOfPool.rawValue {
-                    if checkAvailableNeighbours(currentPosition: Position(ringNumber: element, positionNumber: value)) {
+                    if checkAvailableNeighbours(currentPosition: Position(ringNumber:index1 , positionNumber: index2)) {
                         return true
                     }
                 }
@@ -80,8 +85,8 @@ class Board: Rules {
         return false
     }
 
-    func checkEqualColors(color: Color, leftPos: i, rightPos: j) {
-        if color.rawValue == board[i][j] {
+    func checkEqualColors(color: Colors, leftPos: Int, rightPos: Int) -> Bool {
+        if color.rawValue == board[leftPos][rightPos] {
             return true
         } else {
             return false
@@ -89,8 +94,8 @@ class Board: Rules {
     }
 
     func checkNineMensMorris(player: Player, currentPosition: Position) -> Bool {
-        // след всяко поставяне и след всяко местене се проверява за "дама"
-        let colorOfPool = player.colorOfPools.rawValue
+
+        let colorOfPool = player.colorOfPools
         let curPosLeft = currentPosition.ringNumber
         let curPosRight = currentPosition.positionNumber
 
@@ -98,12 +103,12 @@ class Board: Rules {
             return (checkEqualColors(color: colorOfPool, leftPos: curPosLeft, rightPos: (curPosRight + 1) % 8) && 
                 checkEqualColors(color: colorOfPool, leftPos: curPosLeft, rightPos: (8 + curPosRight - 1) % 8)) ||
                 (checkEqualColors(color: colorOfPool, leftPos: (curPosLeft + 1) % 3, rightPos: curPosRight) && 
-                checkEqualColors(color: colorOfPool, leftPos: (curPosLeft + 2) % 3, rightPos: curPosRight)
+                checkEqualColors(color: colorOfPool, leftPos: (curPosLeft + 2) % 3, rightPos: curPosRight))
         } else {
             return (checkEqualColors(color: colorOfPool, leftPos: curPosLeft, rightPos: (curPosRight + 1) % 8) && 
                 checkEqualColors(color: colorOfPool, leftPos: curPosLeft, rightPos: (curPosRight + 2) % 8)) ||
                 (checkEqualColors(color: colorOfPool, leftPos: curPosLeft, rightPos: (8 + curPosRight - 1) % 8) && 
-                checkEqualColors(color: colorOfPool, leftPos: curPosLeft, rightPos: (8 + curPosRight - 2) % 8)
+                checkEqualColors(color: colorOfPool, leftPos: curPosLeft, rightPos: (8 + curPosRight - 2) % 8))
         }
         
     }
@@ -117,6 +122,7 @@ class Board: Rules {
 
         if board[fromPosLeft][fromPosRight] != "·" && board[toPosLeft][toPosRight] == "·" {
             board[toPosLeft][toPosRight] = board[fromPosLeft][fromPosRight]
+            board[fromPosLeft][fromPosRight] = "·"
             return true
         }
 
@@ -124,7 +130,7 @@ class Board: Rules {
     }
 
     func executeMove(player: Player, placement: Position) -> Bool {
-        let colorOfPlayer = player.colorOfPool.rawValue
+        let colorOfPlayer = player.colorOfPools.rawValue
         let posLeft = placement.ringNumber
         let posRight = placement.positionNumber
         if board[posLeft][posRight] == "·" {
@@ -150,4 +156,29 @@ class Board: Rules {
         board[posLeft][posRight] = "·"
     }
 
+    func convertStringToInt(str: Character) -> Int {
+        return Int(String(str))!
+    }
+
+
+    // not completed yet
+   func toCoordinates(given: String) -> Position {
+
+       let arr = Array(given)
+       if (arr[0] == "A" || arr[0] == "D" || arr[0] == "G") && (arr[1] == "1" || arr[1] == "4" || arr[1] == "7") {
+           return Position(ringNumber: 0, positionNumber: convertStringToInt(str: arr[1]))
+       }
+       else if (arr[0] == "B" || arr[0] == "D" || arr[0] == "F") && (arr[1] == "2" || arr[1] == "4" || arr[1] == "6") {
+           return Position(ringNumber: 1, positionNumber: convertStringToInt(str: arr[1]))
+       }
+       else if (arr[0] == "C" || arr[0] == "D" || arr[0] == "E") && (arr[1] == "3" || arr[1] == "4" || arr[1] == "5") {
+           return Position(ringNumber: 2, positionNumber: convertStringToInt(str: arr[1]))
+       }
+       return Position(ringNumber: 0, positionNumber: convertStringToInt(str: arr[1]))
+    }
+    //
+
 }
+
+
+
