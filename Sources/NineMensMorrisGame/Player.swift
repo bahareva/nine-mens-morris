@@ -2,7 +2,7 @@ protocol Input {
     func readCoordinates() -> String
     func readMovement() -> String
     static func readName() -> String?
-    static func pickPools() -> Colors
+    //static func pickPools() -> Colors
 }
 
 enum Colors: String {
@@ -23,7 +23,7 @@ class Player: Input {
         return result
     }
 
-    public static func pickPools() -> Colors {
+    /*public static func pickPools() -> Colors {
         print("Pick your pools: 1: ○ ; 2: ● ")
         if let input = readLine() {
             if let res = Int(input) {
@@ -44,22 +44,16 @@ class Player: Input {
             }
         }
         return Colors.black
-    }
+    }*/
 
-    public init(isFirst: Bool, colorForSecondPerson: Colors) {
+    public init(color: Colors) {
         if let res = Player.readName() {
             self.name = res
         }
         else {
             self.name = ""
         }
-        if isFirst {
-          self.colorOfPools = Player.pickPools()
-        }
-        else {
-            //
-            self.colorOfPools = colorForSecondPerson
-        }
+        self.colorOfPools = color
         self.poolsOnBoard = 0
         self.poolsInHand = 9
     }
