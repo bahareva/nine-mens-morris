@@ -2,7 +2,6 @@ protocol Input {
     func readCoordinates() -> String
     func readMovement() -> String
     static func readName() -> String?
-    //static func pickPools() -> Colors
 }
 
 enum Colors: String {
@@ -22,29 +21,6 @@ class Player: Input {
         let result: String? = readLine()
         return result
     }
-
-    /*public static func pickPools() -> Colors {
-        print("Pick your pools: 1: ○ ; 2: ● ")
-        if let input = readLine() {
-            if let res = Int(input) {
-                if res == 1 {
-                    return Colors.white
-                }
-                else if res == 2 {
-                    return Colors.black
-                }
-                else {
-                    print("Invalid input. Try again. ")
-                    return pickPools()
-                }
-            }
-            else {
-                print("Invalid input. Try again. ")
-                return pickPools()
-            }
-        }
-        return Colors.black
-    }*/
 
     public init(color: Colors) {
         if let res = Player.readName() {
@@ -79,6 +55,7 @@ class Player: Input {
     }
 
     public func readMovement() -> String {
+        let b = Board()
         print("Enter coordinates to move pool: ")
         if let input = readLine() {
             let arr = Array(input)
@@ -88,11 +65,11 @@ class Player: Input {
             }
             let firstPart = [arr[0],arr[1]]
             let secondPart = [arr[2],arr[3]]
-            if !checkField(arr: firstPart){
+            if !checkField(arr: firstPart) || !b.checkCoordinates(coordinates: input) {
                 print("Invalid input. Try again. ")
                 return readMovement()
             }
-            else if !checkField(arr: secondPart){
+            else if !checkField(arr: secondPart) || !b.checkCoordinates(coordinates: input){
                 print("Invalid input. Try again. ")
                 return readMovement()
             }
@@ -106,6 +83,7 @@ class Player: Input {
     }
 
     public func readCoordinates() -> String {
+        let b = Board()
         print("Enter coordinates to place pool: ")
         if let input = readLine() {
             let arr = Array(input)
@@ -113,7 +91,7 @@ class Player: Input {
                 print("Invalid input. Try again. ")
                 return readCoordinates()
             }
-            else if !checkField(arr: arr){
+            else if !checkField(arr: arr) || !b.checkCoordinates(coordinates: input){
                 print("Invalid input. Try again. ")
                 return readCoordinates()
             }

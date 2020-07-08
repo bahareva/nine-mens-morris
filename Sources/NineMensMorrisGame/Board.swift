@@ -107,7 +107,7 @@ class Board: Rules {
         
     }
 
-    func executePlacement(fromRingNumber: Int, fromPositionNumber: Int, toRingNumber: Int, toPositionNumber: Int) -> Bool {
+    func executeMovement(fromRingNumber: Int, fromPositionNumber: Int, toRingNumber: Int, toPositionNumber: Int) -> Bool {
         let fromPosLeft = fromRingNumber
         let fromPosRight = fromPositionNumber
 
@@ -125,12 +125,16 @@ class Board: Rules {
         }
     }
 
-    func executeMove(player: Player, ringNumber: Int, positionNumber: Int) -> Bool {
+    func executePlacement(player: Player, ringNumber: Int, positionNumber: Int) -> Bool {
         let colorOfPlayer = player.colorOfPools.rawValue
         let posLeft = ringNumber
         let posRight = positionNumber
         if board[posLeft][posRight] == "·" {
             board[posLeft][posRight] = colorOfPlayer
+            print("color: " + colorOfPlayer)
+            print("////")
+            print("on pos: " + board[posLeft][posRight])
+            print("////////////////")
             return true
         }
         else {
@@ -161,25 +165,68 @@ class Board: Rules {
         return Int(String(str))!
     }
 
-
-    // not completed yet
-   func toCoordinates(given: String) -> (Int,Int) {
-
-       let arr = Array(given)
-       if (arr[0] == "A" || arr[0] == "D" || arr[0] == "G") && (arr[1] == "1" || arr[1] == "4" || arr[1] == "7") {
-           return (0, convertStringToInt(str: arr[1]))
-       }
-       else if (arr[0] == "B" || arr[0] == "D" || arr[0] == "F") && (arr[1] == "2" || arr[1] == "4" || arr[1] == "6") {
-           return (1, convertStringToInt(str: arr[1]))
-       }
-       else if (arr[0] == "C" || arr[0] == "D" || arr[0] == "E") && (arr[1] == "3" || arr[1] == "4" || arr[1] == "5") {
-           return (2, convertStringToInt(str: arr[1]))
-       }
-       return (0, convertStringToInt(str: arr[1]))
+    func toCoordinates(given:String) -> (Int,Int) {
+        let stringArr = Array(given)
+        let x = String(stringArr[0]).unicodeScalars.map { $0.value }.reduce(0, +) - "A".unicodeScalars.map { $0.value }.reduce(0, +) + 1
+        let y = String(stringArr[1]).unicodeScalars.map { $0.value }.reduce(0, +) - "1".unicodeScalars.map { $0.value }.reduce(0, +) + 1
+        let ring = getRing(Int(x), Int(y))
+        let position = getPosition(Int(x), Int(y))
+        return (ring,position)
     }
-    //
+
+
+    func getRing(_ x: Int, _ y: Int) -> Int {
+        if x==1 || x==7 || y == 1 || y == 7{
+            return 0
+        }
+         else if x==2 || x==6 || y == 2 || y == 6{
+            return 1
+        }
+        else if x==3 || x==5 || y == 3 || y == 5{
+            return 2
+        }
+        return 10
+    }
+
+
+    func getPosition(_ x: Int, _ y: Int)->Int{
+        let a = possiblePositionsForX(x)
+        let b = possiblePositionsForY(y)
+        let c = intersection(a,b)
+        return c
+    }
+
+    func possiblePositionsForX(_ x: Int) -> [Int]   {
+        if x == 1 || x == 2 || x == 3{
+            return [5, 6, 7]
+        }  else if x == 4 {
+            return [0, 4]
+        }else {
+            return [1,2,3]
+        }
+    }
+
+
+    func possiblePositionsForY(_ y: Int) -> [Int] {
+        if y == 1 || y == 2 || y == 3{
+            return [0, 1, 7]
+        } else if y == 4 {
+            return [2, 6]
+        } else {
+            return [3,4,5]
+        }
+    }
+
+
+    func intersection(_ a: [Int], _ b: [Int]) -> Int {
+        for el1 in a {
+            for el2 in b {
+                if el1 == el2 {
+                    return el1
+                }
+            }
+        }
+        return 0
+    }
 
 }
-
-
-
