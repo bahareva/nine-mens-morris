@@ -107,16 +107,19 @@ class Board: Rules {
         
     }
 
-    func executeMovement(fromRingNumber: Int, fromPositionNumber: Int, toRingNumber: Int, toPositionNumber: Int) -> Bool {
+    func executeMovement(fromRingNumber: Int, fromPositionNumber: Int, toRingNumber: Int, toPositionNumber: Int,b: inout [[String]]) -> Bool {
         let fromPosLeft = fromRingNumber
         let fromPosRight = fromPositionNumber
 
         let toPosLeft = toRingNumber
         let toPosRight = toPositionNumber
-
+        var v = Visualisation(fields: board)
         if board[fromPosLeft][fromPosRight] != "·" && board[toPosLeft][toPosRight] == "·" {
             board[toPosLeft][toPosRight] = board[fromPosLeft][fromPosRight]
             board[fromPosLeft][fromPosRight] = "·"
+            v = Visualisation(fields: board)
+            v.printBoard()
+            b = board
             return true
         }
         else {

@@ -85,21 +85,28 @@ class Game {
         }
     }
 
+    
+    func divideInTwo(input: String) -> ([Character], [Character]) {
+        let arrInput: [Character] = Array(input)
+        let firstPart: [Character] = [arrInput[0],arrInput[1]]
+        let secondPart: [Character] = [arrInput[2],arrInput[3]]
+        return (firstPart, secondPart)
+    }
 
-    func makeSingleMovement(player: Player, fromRingNum: inout Int, fromPosNum: inout Int, toRingNum: inout Int, toPosNum: inout Int) {
+    func makeSingleMovement(player: Player, fromRingNum: inout Int, fromPosNum: inout Int, toRingNum: inout Int, toPosNum: inout Int, b: inout [[String]]){
         let input = player.readMovement()    
-       // let arrInput = Array(input)
-       var (fromRing, fromPos) = board.toCoordinates(given: input)
-       var (toRing, toPos) = board.toCoordinates(given: input)
-       if board.executeMovement(fromRingNumber: fromRing, fromPositionNumber: fromPos, toRingNumber: toRing, toPositionNumber: toPos) {
+        let (firstPart, secondPart) = divideInTwo(input: input)
+        var (fromRing, fromPos) = board.toCoordinates(given: player.fromCharArrayToString(arr: firstPart))
+        var (toRing, toPos) = board.toCoordinates(given: player.fromCharArrayToString(arr: secondPart))
+        if board.executeMovement(fromRingNumber: fromRing, fromPositionNumber: fromPos, toRingNumber: toRing, toPositionNumber: toPos, b:&b) {
            fromRingNum = fromRing
            fromPosNum = fromPos
            toRingNum = toRing
            toPosNum = toPos
-       }
-       else {
-           makeSingleMovement(player: player, fromRingNum: &fromRing, fromPosNum: &fromPos, toRingNum: &toRing, toPosNum: &toPos)
-       }
+        }
+        else {
+           makeSingleMovement(player: player, fromRingNum: &fromRing, fromPosNum: &fromPos, toRingNum: &toRing, toPosNum: &toPos, b:&b)
+        }
     }
 
 
@@ -120,13 +127,10 @@ class Game {
 
     func makeMovementsHelper(firstPlayer: Player, secondPlayer: Player, fromRingNum:inout Int, fromPosNum:inout Int, toRingNum:inout Int, toPosNum:inout Int, endGame:inout Bool, b: inout [[String]]) {
         if board.checkIfPlayerCanMovePool(player: firstPlayer) {
-            let firstPlayerInput = firstPlayer.readMovement()
-            var (fromRing, fromNum) = board.toCoordinates(given: firstPlayerInput)  
-            var (toRing, toNum) = board.toCoordinates(given: firstPlayerInput)
-            makeSingleMovement(player: firstPlayer, fromRingNum: &fromRing, fromPosNum: &fromNum, toRingNum: &toRing, toPosNum: &toNum)
+            makeSingleMovement(player: firstPlayer, fromRingNum: &fromRingNum, fromPosNum: &fromPosNum, toRingNum: &toRingNum, toPosNum: &toPosNum,b:&b)
             if firstPlayer.poolsOnBoard >= 3 {
-            if board.checkNineMensMorris(player: firstPlayer, ringNumber: toRing, positionNumber: toNum) {
-                removePools(firstPlayer: firstPlayer, secondPlayer: secondPlayer, endGame: &endGame, b: &b)
+                if board.checkNineMensMorris(player: firstPlayer, ringNumber: toRingNum, positionNumber: toPosNum) {
+                    removePools(firstPlayer: firstPlayer, secondPlayer: secondPlayer, endGame: &endGame, b: &b)
                 }
             }
         }
@@ -145,6 +149,10 @@ class Game {
             if endGame == false {
                 makeMovementsHelper(firstPlayer: secondPlayer, secondPlayer: firstPlayer, fromRingNum: &fromRing2, fromPosNum: &fromPos2, toRingNum: &toRing2, toPosNum: &toPos2, endGame: &endGame, b: &b)
             }
+        }
+        if endGame == true {
+            print("Game over! ")
+            
         }
     }
 }

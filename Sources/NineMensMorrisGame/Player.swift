@@ -54,22 +54,28 @@ class Player: Input {
         return true
     }
 
+    func fromCharArrayToString(arr: [Character]) -> String {
+        return String(arr)
+    }
+
     public func readMovement() -> String {
         let b = Board()
         print("Enter coordinates to move pool: ")
         if let input = readLine() {
             let arr = Array(input)
+            
             if input.count != 4 {
-                print("Invalid input. Try again. ")
+                print("Invalid input. Try again. in count ")
                 return readMovement()
             }
             let firstPart = [arr[0],arr[1]]
             let secondPart = [arr[2],arr[3]]
-            if !checkField(arr: firstPart) || !b.checkCoordinates(coordinates: input) {
-                print("Invalid input. Try again. ")
+            
+            if !checkField(arr: firstPart) || !b.checkCoordinates(coordinates: fromCharArrayToString(arr: firstPart)) {
+                print("Invalid input. Try again.  ")
                 return readMovement()
             }
-            else if !checkField(arr: secondPart) || !b.checkCoordinates(coordinates: input){
+            else if !checkField(arr: secondPart) || !b.checkCoordinates(coordinates: fromCharArrayToString(arr: secondPart)){
                 print("Invalid input. Try again. ")
                 return readMovement()
             }
