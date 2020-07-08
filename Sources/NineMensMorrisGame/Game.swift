@@ -43,47 +43,45 @@ class Game {
     }
 
     
-    func makeSinglePlacement(player: Player, ringNumber: inout Int, positionNumber: inout Int) {
-        print("1 line of makeSinglePlacement")
+    func makeSinglePlacement(player: Player, ringNumber: inout Int, positionNumber: inout Int, b: inout [[String]]) {
        let input = player.readCoordinates()
        var (ring, num) = board.toCoordinates(given: input)
-       if board.executePlacement(player: player,ringNumber: ring, positionNumber: num) {
-           print("in make single placement 1")
+       if board.executePlacement(player: player,ringNumber: ring, positionNumber: num, b: &b) {
            player.poolsOnBoard = player.poolsOnBoard + 1
            player.poolsInHand = player.poolsInHand - 1
            ringNumber = ring
            positionNumber = num
        }
        else {
-            print("in make single placement 2")
-
-           makeSinglePlacement(player: player, ringNumber: &ring, positionNumber: &num)
+           makeSinglePlacement(player: player, ringNumber: &ring, positionNumber: &num, b: &b)
        }
     }
 
 
-    func placeAllPoolsOnBoardHelper(firstPlayer: Player, secondPlayer: Player, ringNumber:inout Int, positionNumber: inout Int) {
-        print("in placeAllPools")
-        makeSinglePlacement(player: firstPlayer, ringNumber: &ringNumber, positionNumber: &positionNumber)
+    func placeAllPoolsOnBoardHelper(firstPlayer: Player, secondPlayer: Player, ringNumber:inout Int, positionNumber: inout Int, b: inout [[String]]) {
+        makeSinglePlacement(player: firstPlayer, ringNumber: &ringNumber, positionNumber: &positionNumber, b: &b)
             if firstPlayer.poolsOnBoard >= 3 {
                 if board.checkNineMensMorris(player: firstPlayer, ringNumber: ringNumber, positionNumber: positionNumber) {
-                    let toRemove = firstPlayer.readCoordinates()  // тук трябва да стоят координати за премахване 
+                    print("Nine Men's Morris Found! ")
+                    
+                    let toRemove = firstPlayer.readCoordinatesToRemovePools()  // тук трябва да стоят координати за премахване 
                                                                    // и да се проверява какви пулове има противника (може да има само дами)
                     let (ring, num) = board.toCoordinates(given: toRemove)
-                    board.takePool(player: secondPlayer, ringNumber: ring, positionNumber: num)
+                    board.takePool(player: secondPlayer, ringNumber: ring, positionNumber: num,b: &b)
                 }
             }
     }
 
 
-    func placeAllPoolsOnBoard(firstPlayer: Player, secondPlayer: Player) {
+    func placeAllPoolsOnBoard(firstPlayer: Player, secondPlayer: Player, b:inout [[String]]) {
         while (firstPlayer.poolsInHand > 0 || secondPlayer.poolsInHand > 0) {
             var ringNumber1 = 0, positionNumber1 = 0, ringNumber2 = 0, positionNumber2 = 0
-            placeAllPoolsOnBoardHelper(firstPlayer: firstPlayer, secondPlayer: secondPlayer, ringNumber: &ringNumber1, positionNumber: &positionNumber1)
-            placeAllPoolsOnBoardHelper(firstPlayer: secondPlayer, secondPlayer: firstPlayer, ringNumber: &ringNumber2, positionNumber: &positionNumber2)
+            placeAllPoolsOnBoardHelper(firstPlayer: firstPlayer, secondPlayer: secondPlayer, ringNumber: &ringNumber1, positionNumber: &positionNumber1, b: &b)
+            placeAllPoolsOnBoardHelper(firstPlayer: secondPlayer, secondPlayer: firstPlayer, ringNumber: &ringNumber2, positionNumber: &positionNumber2, b: &b)
         }
         if firstPlayer.poolsInHand == 0 && secondPlayer.poolsInHand == 0 {
             print("You are now allowed to move pools! ")  
+
         }
     }
 
@@ -105,11 +103,11 @@ class Game {
     }
 
 
-    func removePools(firstPlayer: Player, secondPlayer: Player, endGame: inout Bool) {
-        let toRemove = firstPlayer.readCoordinates()  // тук трябва да стоят координати за премахване 
+    func removePools(firstPlayer: Player, secondPlayer: Player, endGame: inout Bool, b: inout [[String]]) {
+        let toRemove = firstPlayer.readCoordinatesToRemovePools()  // тук трябва да стоят координати за премахване 
                                                                    // и да се проверява какви пулове има противника (може да има само дами)
         let (ring, num) = board.toCoordinates(given: toRemove)
-        board.takePool(player: secondPlayer, ringNumber: ring, positionNumber: num)
+        board.takePool(player: secondPlayer, ringNumber: ring, positionNumber: num, b: &b)
         if secondPlayer.poolsOnBoard == 2 {
             print("\(secondPlayer.name) lost the game! ")   
             endGame = true
@@ -120,7 +118,7 @@ class Game {
     }
 
 
-    func makeMovementsHelper(firstPlayer: Player, secondPlayer: Player, fromRingNum:inout Int, fromPosNum:inout Int, toRingNum:inout Int, toPosNum:inout Int, endGame:inout Bool) {
+    func makeMovementsHelper(firstPlayer: Player, secondPlayer: Player, fromRingNum:inout Int, fromPosNum:inout Int, toRingNum:inout Int, toPosNum:inout Int, endGame:inout Bool, b: inout [[String]]) {
         if board.checkIfPlayerCanMovePool(player: firstPlayer) {
             let firstPlayerInput = firstPlayer.readMovement()
             var (fromRing, fromNum) = board.toCoordinates(given: firstPlayerInput)  
@@ -128,7 +126,7 @@ class Game {
             makeSingleMovement(player: firstPlayer, fromRingNum: &fromRing, fromPosNum: &fromNum, toRingNum: &toRing, toPosNum: &toNum)
             if firstPlayer.poolsOnBoard >= 3 {
             if board.checkNineMensMorris(player: firstPlayer, ringNumber: toRing, positionNumber: toNum) {
-                removePools(firstPlayer: firstPlayer, secondPlayer: secondPlayer, endGame: &endGame)
+                removePools(firstPlayer: firstPlayer, secondPlayer: secondPlayer, endGame: &endGame, b: &b)
                 }
             }
         }
@@ -138,14 +136,14 @@ class Game {
     }
 
 
-    func makeMovements(firstPlayer: Player, secondPlayer: Player, endGame:inout Bool){
+    func makeMovements(firstPlayer: Player, secondPlayer: Player, endGame:inout Bool,b: inout [[String]]){
         var endGame = false 
         var fromRing1 = 0, fromPos1 = 0, toRing1 = 0, toPos1 = 0
         var fromRing2 = 0, fromPos2 = 0, toRing2 = 0, toPos2 = 0
         while endGame == false {
-            makeMovementsHelper(firstPlayer: firstPlayer, secondPlayer: secondPlayer, fromRingNum: &fromRing1, fromPosNum: &fromPos1, toRingNum: &toRing1, toPosNum: &toPos1, endGame: &endGame)
+            makeMovementsHelper(firstPlayer: firstPlayer, secondPlayer: secondPlayer, fromRingNum: &fromRing1, fromPosNum: &fromPos1, toRingNum: &toRing1, toPosNum: &toPos1, endGame: &endGame, b: &b)
             if endGame == false {
-                makeMovementsHelper(firstPlayer: secondPlayer, secondPlayer: firstPlayer, fromRingNum: &fromRing2, fromPosNum: &fromPos2, toRingNum: &toRing2, toPosNum: &toPos2, endGame: &endGame)
+                makeMovementsHelper(firstPlayer: secondPlayer, secondPlayer: firstPlayer, fromRingNum: &fromRing2, fromPosNum: &fromPos2, toRingNum: &toRing2, toPosNum: &toPos2, endGame: &endGame, b: &b)
             }
         }
     }

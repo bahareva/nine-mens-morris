@@ -103,6 +103,28 @@ class Player: Input {
             return ""
         }
     }
+
+    public func readCoordinatesToRemovePools() -> String {
+        let b = Board()
+        print("Enter coordinates of pool to be removed: ")
+        if let input = readLine() {
+            let arr = Array(input)
+            if input.count != 2 {
+                print("Invalid input. Try again. ")
+                return readCoordinates()
+            }
+            else if !checkField(arr: arr) || !b.checkCoordinates(coordinates: input){
+                print("Invalid input. Try again. ")
+                return readCoordinates()
+            }
+            else {
+                return input
+            }
+        }
+        else {
+            return ""
+        }
+    }
 }
 
 extension Player {

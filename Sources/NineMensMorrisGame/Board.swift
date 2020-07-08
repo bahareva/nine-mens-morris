@@ -125,16 +125,16 @@ class Board: Rules {
         }
     }
 
-    func executePlacement(player: Player, ringNumber: Int, positionNumber: Int) -> Bool {
+    func executePlacement(player: Player, ringNumber: Int, positionNumber: Int, b: inout [[String]]) -> Bool {
+        var v = Visualisation(fields: board)
         let colorOfPlayer = player.colorOfPools.rawValue
         let posLeft = ringNumber
         let posRight = positionNumber
         if board[posLeft][posRight] == "·" {
             board[posLeft][posRight] = colorOfPlayer
-            print("color: " + colorOfPlayer)
-            print("////")
-            print("on pos: " + board[posLeft][posRight])
-            print("////////////////")
+            v = Visualisation(fields: board)
+            v.printBoard()
+            b = board
             return true
         }
         else {
@@ -154,11 +154,15 @@ class Board: Rules {
         }
     }
 
-    func takePool(player: Player, ringNumber: Int, positionNumber: Int) {
+    func takePool(player: Player, ringNumber: Int, positionNumber: Int,b: inout [[String]]) {
+        var v = Visualisation(fields: board)
         let posLeft = ringNumber
         let posRight = positionNumber
         board[posLeft][posRight] = "·"
         player.poolsOnBoard = player.poolsOnBoard - 1
+        v = Visualisation(fields: board)
+        v.printBoard()
+        b = board
     }
 
     func convertStringToInt(str: Character) -> Int {
