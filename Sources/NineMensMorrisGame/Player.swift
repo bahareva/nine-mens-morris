@@ -117,11 +117,11 @@ class Player: Input {
             let arr = Array(input)
             if input.count != 2 {
                 print("Invalid input. Try again. ")
-                return readCoordinates()
+                return readCoordinatesToRemovePools()
             }
             else if !checkField(arr: arr) || !b.checkCoordinates(coordinates: input){
                 print("Invalid input. Try again. ")
-                return readCoordinates()
+                return readCoordinatesToRemovePools()
             }
             else {
                 return input
@@ -145,6 +145,15 @@ extension Player {
 
     public var startMovement: Bool {
         if poolsInHand == 0 {
+            return true
+        }
+        else {
+            return false
+        }
+    }
+
+    public var lost: Bool {
+        if poolsOnBoard == 2 && poolsInHand == 0{
             return true
         }
         else {

@@ -5,7 +5,7 @@ class Game {
     var board:Board
 
     public static func pickPools() -> Colors {
-        print("Pick your pools: 1: ○ ; 2: ● ")
+        print("Pick your pools: 1 -> ○ or 2 -> ●\nEnter the number of the chosen color: ")
         if let input = readLine() {
             if let res = Int(input) {
                 if res == 1 {
@@ -31,21 +31,19 @@ class Game {
     init() {
         let color:Colors = Game.pickPools()
         self.firstPlayer = Player(color: color)
-        //self.secondPlayer = Player(color:color)
         if color == Colors.white {
             self.secondPlayer = Player(color:Colors.black)
         }
         else {
             self.secondPlayer = Player(color:Colors.white)
         }
-
         self.board = Board()
     }
 
     
     func makeSinglePlacement(player: Player, ringNumber: inout Int, positionNumber: inout Int, b: inout [[String]]) {
        let input = player.readCoordinates()
-       var (ring, num) = board.toCoordinates(given: input)
+       let (ring, num) = board.toCoordinates(given: input)
        if board.executePlacement(player: player,ringNumber: ring, positionNumber: num, b: &b) {
            player.poolsOnBoard = player.poolsOnBoard + 1
            player.poolsInHand = player.poolsInHand - 1
@@ -53,35 +51,31 @@ class Game {
            positionNumber = num
        }
        else {
-           makeSinglePlacement(player: player, ringNumber: &ring, positionNumber: &num, b: &b)
+           makeSinglePlacement(player: player, ringNumber: &ringNumber, positionNumber: &positionNumber, b: &b)
        }
     }
 
-
-    func placeAllPoolsOnBoardHelper(firstPlayer: Player, secondPlayer: Player, ringNumber:inout Int, positionNumber: inout Int, b: inout [[String]]) {
+    func placeAllPoolsOnBoardHelper(firstPlayer: Player, secondPlayer: Player, ringNumber:inout Int, positionNumber: inout Int,endGame: inout Bool, b: inout [[String]]) {
         makeSinglePlacement(player: firstPlayer, ringNumber: &ringNumber, positionNumber: &positionNumber, b: &b)
             if firstPlayer.poolsOnBoard >= 3 {
                 if board.checkNineMensMorris(player: firstPlayer, ringNumber: ringNumber, positionNumber: positionNumber) {
                     print("Nine Men's Morris Found! ")
-                    
-                    let toRemove = firstPlayer.readCoordinatesToRemovePools()  // тук трябва да стоят координати за премахване 
-                                                                   // и да се проверява какви пулове има противника (може да има само дами)
-                    let (ring, num) = board.toCoordinates(given: toRemove)
-                    board.takePool(player: secondPlayer, ringNumber: ring, positionNumber: num,b: &b)
+                    removePools(firstPlayer: firstPlayer, secondPlayer: secondPlayer,endGame:&endGame, b: &b)
                 }
             }
     }
 
 
-    func placeAllPoolsOnBoard(firstPlayer: Player, secondPlayer: Player, b:inout [[String]]) {
+    func placeAllPoolsOnBoard(firstPlayer: Player, secondPlayer: Player,endGame: inout Bool, b:inout [[String]]) {
         while (firstPlayer.poolsInHand > 0 || secondPlayer.poolsInHand > 0) {
             var ringNumber1 = 0, positionNumber1 = 0, ringNumber2 = 0, positionNumber2 = 0
-            placeAllPoolsOnBoardHelper(firstPlayer: firstPlayer, secondPlayer: secondPlayer, ringNumber: &ringNumber1, positionNumber: &positionNumber1, b: &b)
-            placeAllPoolsOnBoardHelper(firstPlayer: secondPlayer, secondPlayer: firstPlayer, ringNumber: &ringNumber2, positionNumber: &positionNumber2, b: &b)
+            print("It is \(firstPlayer.name)'s turn! ")
+            placeAllPoolsOnBoardHelper(firstPlayer: firstPlayer, secondPlayer: secondPlayer, ringNumber: &ringNumber1, positionNumber: &positionNumber1,endGame:&endGame, b: &b)
+            print("It is \(secondPlayer.name)'s turn! ")
+            placeAllPoolsOnBoardHelper(firstPlayer: secondPlayer, secondPlayer: firstPlayer, ringNumber: &ringNumber2, positionNumber: &positionNumber2,endGame: &endGame, b: &b)
         }
-        if firstPlayer.poolsInHand == 0 && secondPlayer.poolsInHand == 0 {
+        if firstPlayer.startMovement && secondPlayer.startMovement {
             print("You are now allowed to move pools! ")  
-
         }
     }
 
@@ -96,31 +90,51 @@ class Game {
     func makeSingleMovement(player: Player, fromRingNum: inout Int, fromPosNum: inout Int, toRingNum: inout Int, toPosNum: inout Int, b: inout [[String]]){
         let input = player.readMovement()    
         let (firstPart, secondPart) = divideInTwo(input: input)
-        var (fromRing, fromPos) = board.toCoordinates(given: player.fromCharArrayToString(arr: firstPart))
-        var (toRing, toPos) = board.toCoordinates(given: player.fromCharArrayToString(arr: secondPart))
-        if board.executeMovement(fromRingNumber: fromRing, fromPositionNumber: fromPos, toRingNumber: toRing, toPositionNumber: toPos, b:&b) {
+        let (fromRing, fromPos) = board.toCoordinates(given: player.fromCharArrayToString(arr: firstPart))
+        let (toRing, toPos) = board.toCoordinates(given: player.fromCharArrayToString(arr: secondPart))
+        if board.executeMovement(colorOfPlayer:player.colorOfPools.rawValue ,fromRingNumber: fromRing, fromPositionNumber: fromPos, toRingNumber: toRing, toPositionNumber: toPos, b:&b, fly: player.fly) {
            fromRingNum = fromRing
            fromPosNum = fromPos
            toRingNum = toRing
            toPosNum = toPos
         }
         else {
-           makeSingleMovement(player: player, fromRingNum: &fromRing, fromPosNum: &fromPos, toRingNum: &toRing, toPosNum: &toPos, b:&b)
+            print("СТАНА ГРЕШКА! ОПИТАЙ ПАК!")
+           makeSingleMovement(player: player, fromRingNum: &fromRingNum, fromPosNum: &fromPosNum, toRingNum: &toRingNum, toPosNum: &toPosNum, b:&b)
         }
     }
+
+       /* func removePoolsDuringPlacement(firstPlayer: Player, secondPlayer: Player,b: inout [[String]]) {
+        let toRemove = firstPlayer.readCoordinatesToRemovePools()  // тук трябва да стоят координати за премахване 
+                                                                   // и да се проверява какви пулове има противника (може да има само дами)
+        let (ring, num) = board.toCoordinates(given: toRemove) 
+        if board.checkEqualColors(color: secondPlayer.colorOfPools, leftPos: ring, rightPos: num) {
+            board.takePool(player: secondPlayer, ringNumber: ring, positionNumber: num, b: &b) 
+        }
+        else {
+            print("Cannot take pool at this position!")
+            removePoolsDuringPlacement(firstPlayer: firstPlayer, secondPlayer: secondPlayer, b:&b)
+        }
+    }*/
 
 
     func removePools(firstPlayer: Player, secondPlayer: Player, endGame: inout Bool, b: inout [[String]]) {
         let toRemove = firstPlayer.readCoordinatesToRemovePools()  // тук трябва да стоят координати за премахване 
                                                                    // и да се проверява какви пулове има противника (може да има само дами)
-        let (ring, num) = board.toCoordinates(given: toRemove)
-        board.takePool(player: secondPlayer, ringNumber: ring, positionNumber: num, b: &b)
-        if secondPlayer.poolsOnBoard == 2 {
-            print("\(secondPlayer.name) lost the game! ")   
-            endGame = true
+        let (ring, num) = board.toCoordinates(given: toRemove) 
+        if board.checkEqualColors(color: secondPlayer.colorOfPools, leftPos: ring, rightPos: num) {
+            board.takePool(player: secondPlayer, ringNumber: ring, positionNumber: num, b: &b) 
+            if secondPlayer.lost {
+                print("Game over! \nThe winner is \(firstPlayer.name)!")   
+                endGame = true
+            }
+            if secondPlayer.fly { 
+                print("\(secondPlayer.name) can now fly! ")     
+            }
         }
-        if secondPlayer.poolsOnBoard == 3 { 
-            print("\(secondPlayer.name) can now fly! ")     
+        else {
+            print("Cannot take pool at this position!")
+            removePools(firstPlayer: firstPlayer, secondPlayer: secondPlayer, endGame:&endGame, b:&b)
         }
     }
 
@@ -130,11 +144,16 @@ class Game {
             makeSingleMovement(player: firstPlayer, fromRingNum: &fromRingNum, fromPosNum: &fromPosNum, toRingNum: &toRingNum, toPosNum: &toPosNum,b:&b)
             if firstPlayer.poolsOnBoard >= 3 {
                 if board.checkNineMensMorris(player: firstPlayer, ringNumber: toRingNum, positionNumber: toPosNum) {
+                    print("\(firstPlayer.name) има ДАМА! ")
                     removePools(firstPlayer: firstPlayer, secondPlayer: secondPlayer, endGame: &endGame, b: &b)
+                }
+                else {
+                    print("\(firstPlayer.name) НЯМА ДАМА! ")
                 }
             }
         }
         else {
+            print("Game over! \nThe winner is \(secondPlayer.name)!") 
             endGame = true
         }
     }
@@ -145,14 +164,12 @@ class Game {
         var fromRing1 = 0, fromPos1 = 0, toRing1 = 0, toPos1 = 0
         var fromRing2 = 0, fromPos2 = 0, toRing2 = 0, toPos2 = 0
         while endGame == false {
+            print("It is \(firstPlayer.name)'s turn! ")
             makeMovementsHelper(firstPlayer: firstPlayer, secondPlayer: secondPlayer, fromRingNum: &fromRing1, fromPosNum: &fromPos1, toRingNum: &toRing1, toPosNum: &toPos1, endGame: &endGame, b: &b)
             if endGame == false {
+                print("It is \(secondPlayer.name)'s turn! ")
                 makeMovementsHelper(firstPlayer: secondPlayer, secondPlayer: firstPlayer, fromRingNum: &fromRing2, fromPosNum: &fromPos2, toRingNum: &toRing2, toPosNum: &toPos2, endGame: &endGame, b: &b)
             }
-        }
-        if endGame == true {
-            print("Game over! ")
-            
         }
     }
 }
@@ -174,6 +191,3 @@ class Game {
 // ПРИНТИРАНЕ
 //    1) В началото на играта 
 //    2) След всеки изигран ход
-
-
-
