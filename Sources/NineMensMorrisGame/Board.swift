@@ -6,6 +6,7 @@ protocol Rules {
    func checkIfPlayerCanMovePool(player: Player) -> Bool
    func checkIfGivenPositionIsAvailable(ringNumber: Int, positionNumber: Int) -> Bool
    func checkAvailableNeighbours(ringNumber: Int, positionNumber: Int) -> Bool
+   func arePoolsInNineMensMorris(player: Player) -> Bool
 }
 
 class Board: Rules {
@@ -73,6 +74,17 @@ class Board: Rules {
             }
         }
         return false
+    }
+
+    func arePoolsInNineMensMorris(player: Player) -> Bool{
+        for i in 0...2 {
+            for j in 0...7 {
+                if board[i][j] == player.colorOfPools.rawValue && !checkNineMensMorris(player: player, ringNumber: i, positionNumber: j){
+                    return false
+                }
+            }
+        }
+        return true
     }
 
     func checkEqualColors(color: Colors, leftPos: Int, rightPos: Int) -> Bool {
