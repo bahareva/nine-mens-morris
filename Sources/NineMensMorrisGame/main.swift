@@ -3,6 +3,6 @@ var v = Visualisation(fields: b.board)
 
 let g = Game()
 
-g.placeAllPoolsOnBoard(firstPlayer: g.firstPlayer, secondPlayer: g.secondPlayer,endGame: &end, b: &b.board)
+g.placeAllPoolsOnBoard(endGame: &end)
 var end = false
-g.makeMovements(firstPlayer: g.firstPlayer, secondPlayer: g.secondPlayer, endGame: &end, b: &b.board)
+g.makeMovements(endGame: &end)

@@ -110,7 +110,7 @@ class Board: Rules {
     }
 
 
-    func executeMovement(colorOfPlayer: String, fromRingNumber: Int, fromPositionNumber: Int, toRingNumber: Int, toPositionNumber: Int,b: inout [[String]], fly: Bool) -> Bool {
+    func executeMovement(colorOfPlayer: String, fromRingNumber: Int, fromPositionNumber: Int, toRingNumber: Int, toPositionNumber: Int,fly: Bool) -> Bool {
         var v = Visualisation(fields: board)
         if board[toRingNumber][toPositionNumber] == "·" && board[fromRingNumber][fromPositionNumber] == colorOfPlayer {
             if fly || checkRightMovement(fromRing: fromRingNumber, fromPos: fromPositionNumber, toRing: toRingNumber, toPos: toPositionNumber) {
@@ -118,7 +118,6 @@ class Board: Rules {
                 board[fromRingNumber][fromPositionNumber] = "·"
                 v = Visualisation(fields: board)
                 v.printBoard()
-                b = board
                 return true
             }
             else {
@@ -132,14 +131,12 @@ class Board: Rules {
         }
     }
 
-    func executePlacement(player: Player, ringNumber: Int, positionNumber: Int, b: inout [[String]]) -> Bool {
-        var v = Visualisation(fields: board)
+    func executePlacement(player: Player, ringNumber: Int, positionNumber: Int) -> Bool {
         let colorOfPlayer = player.colorOfPools.rawValue
         if board[ringNumber][positionNumber] == "·" {
             board[ringNumber][positionNumber] = colorOfPlayer
-            v = Visualisation(fields: board)
+            let v = Visualisation(fields: board)
             v.printBoard()
-            b = board
             return true
         }
         else {
@@ -158,13 +155,11 @@ class Board: Rules {
         }
     }
 
-    func takePool(player: Player, ringNumber: Int, positionNumber: Int,b: inout [[String]]){
-        var v = Visualisation(fields: board)
+    func takePool(player: Player, ringNumber: Int, positionNumber: Int){
         board[ringNumber][positionNumber] = "·"
         player.poolsOnBoard = player.poolsOnBoard - 1
-        v = Visualisation(fields: board)
+        let v = Visualisation(fields: board)
         v.printBoard()
-        b = board
     }
 
     func convertStringToInt(str: Character) -> Int {
